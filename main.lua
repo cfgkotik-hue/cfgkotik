@@ -3,8 +3,8 @@
 local NS = getgenv().CFGKOTIK or {}
 getgenv().CFGKOTIK = NS
 
-local BASE = "https://raw.githubusercontent.com/cfgkotik-hue/cfgkotik/main/"
-local CACHE_BUST = "?nocache=" .. tostring(os.time())
+local BASE = "https://cdn.jsdelivr.net/gh/cfgkotik-hue/cfgkotik@main/"
+local CACHE_BUST = ""
 
 local FILES = {
     -- 0. base
