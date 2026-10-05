@@ -5,10 +5,12 @@ if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
 local Workspace = NS.Workspace
 local UIS       = NS.UIS
+
 local isBindActive = function(id)
     if NS.isBindActive then return NS.isBindActive(id) end
     return false
 end
+
 -- ================== SPEED ==================
 do
     local saved = nil
@@ -22,6 +24,11 @@ do
             saved = nil
         end
         if not c then return end
+
+        local h = c:FindFirstChildOfClass("Humanoid")
+        if not h then return end
+
+        local on = S.SpeedHack or isBindActive("Speed") 
 
         local h = c:FindFirstChildOfClass("Humanoid")
         if not h then return end
