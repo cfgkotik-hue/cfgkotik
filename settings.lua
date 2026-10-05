@@ -1,21 +1,91 @@
+--!nocheck
+local NS = getgenv().CFGKOTIK
+if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
-  -- Settings table + integrity check
-  local Settings = {
-      Aimbot=false, AimKey=Enum.KeyCode.E, FOV=120, -- etc (full table from original)
-  }
-  getgenv().Settings = Settings
+NS.Settings = {
+    Aimbot=false, AimKey=Enum.KeyCode.E, AimMode="Hold", AimSmoothMode="Smooth",
+    FOV=120, TeamCheck=false, ShowFov=true,
+    AimColor=Color3.fromRGB(140,100,255), AimColorLocked=Color3.fromRGB(255,80,120),
+    AimPartList={Head=true,Torso=false,Limbs=false}, Priority="FOV", Visibility=true,
+    HitChance=100, Jitter=0, PredAmount=1.0, StickyTime=0.25,
+    AimStickyStrict=true, AimGravityComp=true,
+    FovExpand=false, FovExpandMult=1.3, FovExpandHold=0.5,
+    FovExpandStationary=false, FovExpandStationaryMult=1.3,
+    AdaptiveFov=true, AdaptiveFovFactor=0.8,
+    SilentAim=false, SilentAimMaxFireRate=60,
+    TriggerBot=false, TriggerDelay=0.1, AntiDetectionJitter=false,
+    HitboxExpand=false, HitboxSize=5,
+    HitboxPartList={Head=true,Torso=true,Limbs=true},
+    TargetNPCs=false, TargetPlayers=true,
+    ScanIgnorePatterns={"dummy","target","practice","npc_","prop_","vehicle","car","bike","crate"},
+    ScanStrictRig=true, ScanMaxDist=3000, ScanInterval=0.2,
+    ScanVisibilityInterval=0.15, ScanMaxEntities=200,
+    DetectorDebug=false, _UseLegacyScan=false,
+    ESP=false, ESPBox=true, ESPName=true, ESPDistance=false,
+    ESPHealth=true, ESPHighlight=false, ESPHighlightOccluded=false,
+    ESPHighlightMode="AlwaysOnTop", ESPTracers=false, ESPWeapon=true,
+    ESPBoxStyle="full", ESPColor=Color3.fromRGB(230,80,100),
+    ESPTracerFrom="Bottom", ESPMaxDist=2000,
+    ESPShowPlayers=true, ESPShowNPCs=true,
+    ESPVisibilityCheck=true, ESPShowVisLabel=true, ESPUpdateRate=0.03,
+    ESPDistanceColors=false, ESPNearThreshold=50, ESPMidThreshold=200,
+    ESPNearColor=Color3.fromRGB(255,69,58), ESPMidColor=Color3.fromRGB(255,214,10),
+    ESPFarColor=Color3.fromRGB(52,199,89),
+    SpeedHack=false, Speed=50, Fly=false, FlySpeed=80,
+    JumpPower=50, JumpPowerEnable=false, InfiniteJump=false, Noclip=false,
+    WorldRain=false, WorldRainRate=300, WorldRainSpeed=90, WorldRainSize=0.08,
+    WorldSnow=false, WorldSnowRate=200, WorldSnowSpeed=4, WorldSnowSize=0.25,
+    WorldThunder=false, WorldThunderMin=3, WorldThunderMax=8, WorldThunderBright=60,
+    WorldFog=false, WorldFogDensity=0.5, WorldFogHaze=2,
+    WorldVignette=false, WorldVignetteStrength=0.15,
+    WorldColorShift=false, WorldColorShiftColor=Color3.fromRGB(80,40,120),
+    WorldBlur=false, WorldBlurSize=4,
+    ThirdPerson=false, ThirdPersonDistance=10,
+    CameraFov=false, CameraFovAmount=1.0,
+    AutoParry=false, AutoParryOffset=0.05,
+    AutoParryKey=Enum.KeyCode.F, AutoParryRange=30,
+    AutoLoot=false, AutoLootMode="Prompt",
+    AutoLootNames={"coin","gem","chest","drop","loot","crystal","orb"},
+    AutoLootMaxDist=100, AutoLootInterval=0.2,
+    AntiAFK=false, AntiAFKInterval=30, AntiAFKChatSpam=false,
+    AntiAFKChatPhrases={"still here","gg","nice"},
+    RadarEnabled=false, RadarSize=180, RadarScale=0.7,
+    RadarRange=300, RadarPosition="TopRight",
+    RadarShowPlayers=true, RadarShowNPCs=false,
+    RadarPlayerColor=Color3.fromRGB(230,80,100),
+    RadarNPCColor=Color3.fromRGB(255,200,60),
+    BindAimKeyKey=nil, BindAimKeyMode="Hold",
+    BindFovExpandKey=nil, BindFovExpandMode="Toggle",
+    BindTriggerKey=nil, BindTriggerMode="Toggle",
+    BindHitboxKey=nil, BindHitboxMode="Toggle",
+    BindVisibilityKey=nil, BindVisibilityMode="Toggle",
+    BindSpeedKey=nil, BindSpeedMode="Toggle",
+    BindFlyKey=nil, BindFlyMode="Toggle",
+    BindStripEnabled=true, BindStripLabel="short",
+    BindStripSize=14, BindStripX=486, BindStripY=680,
+    BindStripPosition="Bottom Center",
+    CurrentBindProfile="default", BindProfiles={},
+    HudShowLogo=true, HudShowTime=true, HudShowFps=true,
+    HudShowPing=true, HudShowTarget=true, HudShowEntities=false,
+    HudShowCombatStats=false,
+    HudBgColor=Color3.fromRGB(20,20,26),
+    HudLogoColor=Color3.fromRGB(10,132,255),
+    HudTimeColor=Color3.fromRGB(240,240,245),
+    HudFpsColor=Color3.fromRGB(80,200,130),
+    HudPingColor=Color3.fromRGB(255,189,46),
+    HudTargetColor=Color3.fromRGB(230,80,100),
+    HudEntitiesColor=Color3.fromRGB(170,170,185),
+    MenuKey=Enum.KeyCode.RightShift, CurrentConfig="default",
+    TargetWhitelist={}, TargetBlacklist={}, TargetHistory={},
+    AutoOptimize=false, MinFpsThreshold=45,
+    PerfSpatialGrid=true, PerfCacheESP=true, PerfBatchVis=true,
+    ESPMoveThreshold=5, ESPCacheInterval=0.05,
+    PredHistory=5, PredAccel=true,
+    CurrentTheme="Default", CustomThemeName="my_theme",
+    ScanIgnoreList="dummy,target,practice",
+    AutoLootNamesList="coin,gem,chest,drop",
+    AimStickyMode="Strict",
+}
 
-  -- Integrity system (frozen hashes + violation counter)
-  local frozen, lockedHashes, violations = {}, {}, 0
-  local function hashTable(t) --[[ original hash logic ]] end
-  local function seal() --[[ seal logic ]] end
-  local function check() --[[ check logic ]] end
-
-  seal()
-  task.spawn(function()
-      while task.wait(3) do pcall(check) end
-  end)
-
-  return Settings
-
- 
+getgenv().Settings = NS.Settings
+return NS
