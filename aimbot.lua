@@ -335,7 +335,8 @@ NS.Aimbot = (function()
             st.lastFilter = S.AimPartList
         end
 
-        local cursor  = NS.UIS:GetMouseLocation()
+        local UIS = NS.UIS or game:GetService("UserInputService")
+        local cursor = UIS:GetMouseLocation()
         local baseFov = S.FOV * adaptiveFactor()
 
         local found = scan(cursor, baseFov * getFovMult(true))
