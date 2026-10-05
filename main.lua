@@ -3,9 +3,9 @@
 local BASE = "https://raw.githubusercontent.com/cfgkotik-hue/cfgkotik/main/"
 
 local function load(path)
-    local ok, result = pcall(function()
-        return loadstring(game:HttpGet(BASE .. path))()
-    end)
+    local CACHE_BUST = "?nocache=" .. tostring(os.time())
+local function load(path)
+    local ok, src = pcall(function() return game:HttpGet(BASE .. path .. CACHE_BUST) end)
     if not ok then
         warn("[cfgkotik] Failed to load: " .. path .. " — " .. tostring(result))
         return nil
