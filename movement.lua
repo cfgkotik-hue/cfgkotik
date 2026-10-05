@@ -4,7 +4,7 @@ local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
 local Workspace = NS.Workspace
-local UIS       = NS.UIS
+local UIS       = NS.UIS or game:GetService("UserInputService")
 
 local isBindActive = function(id)
     if NS.isBindActive then return NS.isBindActive(id) end
