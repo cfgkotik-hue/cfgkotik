@@ -5,10 +5,12 @@ if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
 
 NS.Players = Players
 NS.Workspace = Workspace
 NS.RunService = RunService
+NS.UIS = UIS
 NS.LP = Players.LocalPlayer
 NS.Cam = { cur = Workspace.CurrentCamera }
 
