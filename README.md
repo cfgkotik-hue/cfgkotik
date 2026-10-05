@@ -36,25 +36,6 @@
 
 
 
-&#x20; Updating
-
-
-
-&#x20; To update a single feature without reloading the full script:
-
-
-
-&#x20; -- Example: Update aimbot only
-
-&#x20; getgenv().Aimbot =
-
-&#x20; loadstring(game:HttpGet("https://raw.githubusercontent.com/USER/cfgkotik/main/features/aimbot.lua"))()
-
-&#x20; getgenv().Aimbot.start()
-
-
-
-&#x20; License
 
 
 
