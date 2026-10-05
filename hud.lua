@@ -2,7 +2,7 @@
 -- cfgkotik v37 — HUD (logo, time, FPS, ping, target, entity count)
 local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
-
+local UIS = NS.UIS or game:GetService("UserInputService")
 local UIS = NS.UIS
 
 NS.HUD = (function()
