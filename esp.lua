@@ -292,7 +292,7 @@ NS.ESP = (function()
                                             if S.ESPTracerFrom == "Top" then
                                                 from = Vector2.new(vp.X/2, 0)
                                             elseif S.ESPTracerFrom == "Mouse" then
-                                                from = NS.UIS:GetMouseLocation()
+                                                from = (NS.UIS or game:GetService("UserInputService")):GetMouseLocation())
                                             else
                                                 from = Vector2.new(vp.X/2, vp.Y)
                                             end
