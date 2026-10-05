@@ -19,15 +19,17 @@ Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
 end)
 
 function NS.safeBind(name, prio, fn)
-function NS.safeBind(name, prio, fn)
     return RunService:BindToRenderStep(name, prio, fn)
 end
+
 function NS.safeHeartbeat(fn)
     return RunService.Heartbeat:Connect(fn)
 end
+
 function NS.safeRender(fn)
     return RunService.RenderStepped:Connect(fn)
 end
+
 function NS.raycast(...)
     return Workspace:Raycast(...)
 end
@@ -38,6 +40,7 @@ function NS.protectGui(sg)
     local pg = rawget(_G, "protect_gui")
     if pg then pcall(pg, sg) end
 end
+
 function NS.getParentGui()
     local gh = rawget(_G, "gethui")
     if gh then
@@ -49,6 +52,7 @@ end
 
 local Stats = game:GetService("Stats")
 local pingCache = { val = 0, at = 0 }
+
 function NS.getPing()
     local now = os.clock()
     if now - pingCache.at > 0.5 then
