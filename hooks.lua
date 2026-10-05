@@ -19,6 +19,7 @@ Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
 end)
 
 function NS.safeBind(name, prio, fn)
+function NS.safeBind(name, prio, fn)
     return RunService:BindToRenderStep(name, prio, fn)
 end
 function NS.safeHeartbeat(fn)
