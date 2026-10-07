@@ -2,7 +2,7 @@
 -- cfgkotik v37 — HUD (logo, time, FPS, ping, target, entity count)
 local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
-local UIS = NS.UIS or game:GetService("UserInputService")
+
 local UIS = NS.UIS
 
 NS.HUD = (function()
@@ -12,13 +12,13 @@ NS.HUD = (function()
     local fps = 0
 
     local style = {
-        bg         = Color3.fromRGB(20,20,26),
-        logo       = Color3.fromRGB(10,132,255),
-        time       = Color3.fromRGB(240,240,245),
-        fps        = Color3.fromRGB(80,200,130),
-        ping       = Color3.fromRGB(255,189,46),
-        target     = Color3.fromRGB(230,80,100),
-        entities   = Color3.fromRGB(170,170,185),
+        bg       = Color3.fromRGB(20,20,26),
+        logo     = Color3.fromRGB(10,132,255),
+        time     = Color3.fromRGB(240,240,245),
+        fps      = Color3.fromRGB(80,200,130),
+        ping     = Color3.fromRGB(255,189,46),
+        target   = Color3.fromRGB(230,80,100),
+        entities = Color3.fromRGB(170,170,185),
     }
 
     -- ================== helpers ==================
@@ -99,20 +99,20 @@ NS.HUD = (function()
         lay.Padding = UDim.new(0, 5)
         lay.SortOrder = Enum.SortOrder.LayoutOrder
 
-        parts.logo   = makeCell(0,  "logo",     "cfgkotik")
+        parts.logo = makeCell(0, "logo", "cfgkotik")
         parts.logo.Font = Enum.Font.GothamBold
         parts.logo.TextSize = 12
 
-        parts.sep1   = makeSep(1)
-        parts.time   = makeCell(2,  "time",     "MSK --:--:--")
-        parts.sep2   = makeSep(3)
-        parts.fps    = makeCell(4,  "fps",      "FPS 0")
-        parts.sep3   = makeSep(5)
-        parts.ping   = makeCell(6,  "ping",     "Ping --")
-        parts.sep4   = makeSep(7)
+        parts.sep1 = makeSep(1)
+        parts.time = makeCell(2, "time", "MSK --:--:--")
+        parts.sep2 = makeSep(3)
+        parts.fps = makeCell(4, "fps", "FPS 0")
+        parts.sep3 = makeSep(5)
+        parts.ping = makeCell(6, "ping", "Ping --")
+        parts.sep4 = makeSep(7)
         parts.entities = makeCell(8, "entities", "целей: 0")
-        parts.sep5   = makeSep(9)
-        parts.target = makeCell(10, "target",   "цель: —")
+        parts.sep5 = makeSep(9)
+        parts.target = makeCell(10, "target", "цель: —")
 
         frame.Position = UDim2.new(0, 12, 0, 12)
 
@@ -210,7 +210,6 @@ NS.HUD = (function()
 
                 parts.time.Text = "MSK " .. mskTime()
 
-                -- fps cell
                 if S.HudShowCombatStats then
                     local hist = S.TargetHistory or {}
                     local locked = 0
