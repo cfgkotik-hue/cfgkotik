@@ -1,5 +1,5 @@
 --!nocheck
--- cfgkotik v37 — Misc utilities (rejoin, teleport, character helpers)
+-- cfgkotik v37 — Misc utilities (rejoin, teleport, server info, character helpers)
 local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
@@ -22,7 +22,7 @@ function M.rejoin()
     return ok
 end
 
--- ================== teleport to mouse ==================
+-- ================== teleport ==================
 function M.teleportToMouse()
     local mouse = NS.LP:GetMouse()
     if not mouse or not mouse.Hit then return false end
@@ -31,22 +31,17 @@ function M.teleportToMouse()
     local hrp = c:FindFirstChild("HumanoidRootPart")
     if not hrp then return false end
     local pos = mouse.Hit.Position + Vector3.new(0, 3, 0)
-    pcall(function()
-        hrp.CFrame = CFrame.new(pos)
-    end)
+    pcall(function() hrp.CFrame = CFrame.new(pos) end)
     return true
 end
 
--- ================== teleport to position ==================
 function M.teleportTo(pos)
     if not pos then return false end
     local c = NS.LP.Character
     if not c then return false end
     local hrp = c:FindFirstChild("HumanoidRootPart")
     if not hrp then return false end
-    pcall(function()
-        hrp.CFrame = CFrame.new(pos)
-    end)
+    pcall(function() hrp.CFrame = CFrame.new(pos) end)
     return true
 end
 
@@ -72,13 +67,26 @@ function M.getPosition()
     return r and r.Position or nil
 end
 
+function M.getHumanoidState()
+    local h = M.getHumanoid()
+    if not h then return nil end
+    local ok, state = pcall(function() return h:GetState() end)
+    return ok and state or nil
+end
+
+function M.respawn()
+    local h = M.getHumanoid()
+    if not h then return end
+    pcall(function() h.Health = 0 end)
+end
+
 -- ================== server info ==================
 function M.getServerInfo()
     return {
-        placeId = game.PlaceId,
-        jobId   = game.JobId,
-        players = #NS.Players:GetPlayers(),
-        maxPlayers = NS.Players.MaxPlayers,
+        placeId     = game.PlaceId,
+        jobId       = game.JobId,
+        players     = #NS.Players:GetPlayers(),
+        maxPlayers  = NS.Players.MaxPlayers,
     }
 end
 
@@ -95,7 +103,7 @@ function M.copyServerInfo()
     return text
 end
 
--- ================== get all entities names ==================
+-- ================== entity list ==================
 function M.listEntities()
     if not NS.Scanner then return {} end
     local out = {}
@@ -109,27 +117,10 @@ function M.listEntities()
     return out
 end
 
--- ================== distance helper ==================
+-- ================== distance ==================
 function M.distanceBetween(a, b)
     if not a or not b then return nil end
     return (a - b).Magnitude
-end
-
--- ================== humanoid state ==================
-function M.getHumanoidState()
-    local h = M.getHumanoid()
-    if not h then return nil end
-    local ok, state = pcall(function() return h:GetState() end)
-    return ok and state or nil
-end
-
--- ================== kick/respawn (self) ==================
-function M.respawn()
-    local h = M.getHumanoid()
-    if not h then return end
-    pcall(function()
-        h.Health = 0
-    end)
 end
 
 return NS
