@@ -7,7 +7,7 @@ NS.MemoryConfigs = (function()
     local M = {}
 
     -- store[userId][configName] = settings copy
-    -- named[userId] = { list of config names in insertion order }
+    -- named[userId] = { ordered list of config names }
     local store = {}
     local named = {}
 
@@ -45,10 +45,10 @@ NS.MemoryConfigs = (function()
         end
     end
 
-    -- ================== sanitize (skip runtime-only) ==================
+    -- ================== skip keys ==================
     local SKIP_KEYS = {
         _UseLegacyScan = true,
-        TargetHistory = true,
+        TargetHistory  = true,
     }
 
     local function snapshot()
@@ -63,7 +63,7 @@ NS.MemoryConfigs = (function()
 
     -- ================== public API ==================
     function M.save(name)
-        name = name or NS.Settings.CurrentConfig or "default"
+        name = name or (NS.Settings.CurrentConfig or "default")
         local u = uid()
         store[u] = store[u] or {}
         named[u] = named[u] or {}
@@ -83,7 +83,7 @@ NS.MemoryConfigs = (function()
     end
 
     function M.load(name)
-        name = name or NS.Settings.CurrentConfig or "default"
+        name = name or (NS.Settings.CurrentConfig or "default")
         local u = uid()
         if not store[u] or not store[u][name] then
             return false, "not found"
@@ -94,7 +94,7 @@ NS.MemoryConfigs = (function()
     end
 
     function M.remove(name)
-        name = name or NS.Settings.CurrentConfig or "default"
+        name = name or (NS.Settings.CurrentConfig or "default")
         local u = uid()
         if not store[u] or not store[u][name] then
             return false, "not found"
