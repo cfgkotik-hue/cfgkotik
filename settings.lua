@@ -111,7 +111,7 @@ NS.Settings = {
     HudEntitiesColor=Color3.fromRGB(170,170,185),
 
     -- ================== MISC ==================
-    MenuKey=Enum.KeyCode.RightShift,
+    MenuKey=Enum.KeyCode.Insert,
     CurrentConfig="default",
     TargetWhitelist={},
     TargetBlacklist={},
