@@ -1,13 +1,13 @@
 --!nocheck
--- cfgkotik v37 — Aimbot (targeting, prediction, sticky, FOV expand, silent fire)
+-- cfgkotik v37 — Aimbot (targeting, prediction, sticky, FOV expand, silent)
 local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
-local clamp = math.clamp
-local exp   = math.exp
-local lookAt = CFrame.lookAt
+local clamp   = math.clamp
+local exp     = math.exp
+local lookAt  = CFrame.lookAt
 
-local SMOOTH = {
+local SMOOTH_PRESETS = {
     Smooth = { smooth = 0.5, maxAng = 450 },
     Ultra  = { smooth = 1.0, maxAng = 750 },
     Soft   = { smooth = 2.0, maxAng = 0   },
@@ -15,13 +15,11 @@ local SMOOTH = {
 
 NS.Aimbot = (function()
     local M = {}
-
     local st = {
-        target = nil, targetPart = nil, lastSeen = 0,
-        initialized = false, lastFrame = 0, lastTrigger = 0,
-        targetName = nil,
-        fovMult = 1.0, fovResetAt = 0,
-        lastFilter = nil,
+        target=nil, targetPart=nil, lastSeen=0,
+        initialized=false, lastFrame=0, lastTrigger=0, targetName=nil,
+        fovMult=1.0, fovResetAt=0,
+        lastFilter=nil,
         posHistory = {},
         failCount = 0, lastFailTime = 0,
     }
@@ -42,7 +40,9 @@ NS.Aimbot = (function()
     local function toScreen(wp)
         local cam = NS.Cam.cur or NS.Workspace.CurrentCamera
         if not cam then return nil end
-        local ok, sp, on = pcall(function() return cam:WorldToViewportPoint(wp) end)
+        local ok, sp, on = pcall(function()
+            return cam:WorldToViewportPoint(wp)
+        end)
         if not ok or not sp then return nil end
         if not on and sp.Z <= 0 then return nil end
         return Vector2.new(sp.X, sp.Y)
@@ -51,16 +51,22 @@ NS.Aimbot = (function()
     local function score(sd, wd, hum)
         local pr = NS.Settings.Priority or "FOV"
         if pr == "Distance" then return wd end
-        if pr == "Health"   then return hum and hum.Health or 100 end
+        if pr == "Health" then return hum and hum.Health or 100 end
         return sd
     end
 
+    local function filterName(e)
+        if e.isPlayer and e.player then return e.player.Name end
+        if e.char then return e.char.Name end
+        return nil
+    end
+
     local function passesFilter(e)
-        local S = NS.Settings
-        local n = e.isPlayer and e.player and e.player.Name
-                  or (e.char and e.char.Name)
+        local n = filterName(e)
         if not n then return true end
-        if S.TargetBlacklist and S.TargetBlacklist[n] then return false end
+        local S = NS.Settings
+        local bl = S.TargetBlacklist
+        if bl and bl[n] then return false end
         local wl = S.TargetWhitelist
         if wl and next(wl) ~= nil and not wl[n] then return false end
         return true
@@ -73,16 +79,15 @@ NS.Aimbot = (function()
         local camPos  = cam.CFrame.Position
         local camLook = cam.CFrame.LookVector
 
-        local S = NS.Settings
         local entities
-        if S.PerfSpatialGrid and NS.SpatialGrid then
+        if NS.Settings.PerfSpatialGrid and NS.SpatialGrid then
             entities = NS.SpatialGrid.query(camPos, fovRadius * 2)
         else
             entities = NS.Scanner.getEntities()
         end
 
-        local sel = S.AimPartList or {}
-        local pr  = S.Priority or "FOV"
+        local sel = NS.Settings.AimPartList or {}
+        local pr  = NS.Settings.Priority or "FOV"
         local bE, bP, bS = nil, nil, math.huge
 
         for _, e in ipairs(entities) do
@@ -92,7 +97,8 @@ NS.Aimbot = (function()
                 if not skip then
                     local toRoot = e.root.Position - camPos
                     if toRoot.Magnitude > 0.01 then
-                        if toRoot.Unit:Dot(camLook) > -0.2 then
+                        local dot = toRoot.Unit:Dot(camLook)
+                        if dot > -0.2 then
                             local pm = e.partMap
                             if pm then
                                 for grp, list in pairs(pm) do
@@ -103,7 +109,8 @@ NS.Aimbot = (function()
                                                 local sp = toScreen(part.Position)
                                                 if sp then
                                                     local sd = (sp - center).Magnitude
-                                                    local inFov = (pr == "Crosshair") or (sd <= fovRadius)
+                                                    local inFov = (pr == "Crosshair")
+                                                        or (sd <= fovRadius)
                                                     if inFov and e.visible then
                                                         local wd = (part.Position - camPos).Magnitude
                                                         local s = score(sd, wd, e.hum)
@@ -127,7 +134,7 @@ NS.Aimbot = (function()
         if bE then
             if st.target ~= bE then
                 st.targetName = bE.isPlayer and bE.player.Name
-                                 or ("[NPC] " .. bE.char.Name)
+                             or ("[NPC] " .. bE.char.Name)
             end
             st.target, st.targetPart, st.lastSeen = bE, bP, os.clock()
             return true
@@ -135,13 +142,13 @@ NS.Aimbot = (function()
         return false
     end
 
-    -- ================== state ==================
+    -- ================== shouldAim ==================
     local function shouldAim()
         local S = NS.Settings
         if not S.Aimbot then return false end
         if S.AimMode == "Always" then return true end
         if NS.isInputPressed(S.AimKey) then return true end
-        if isBindActive("AimKey") then return true end
+        if NS.isBindActive("AimKey") then return true end
         return false
     end
 
@@ -171,12 +178,11 @@ NS.Aimbot = (function()
 
     -- ================== smoothing ==================
     local function smooth(goalCF, dt)
-        local S = NS.Settings
-        local preset = SMOOTH[S.AimSmoothMode] or SMOOTH.Smooth
+        local preset = SMOOTH_PRESETS[NS.Settings.AimSmoothMode] or SMOOTH_PRESETS.Smooth
         local cam = NS.Cam.cur or NS.Workspace.CurrentCamera
         if not cam then return goalCF end
         local cur = cam.CFrame
-        local d   = clamp(cur.LookVector:Dot(goalCF.LookVector), -1, 1)
+        local d = clamp(cur.LookVector:Dot(goalCF.LookVector), -1, 1)
         local deg = math.deg(math.acos(d))
         local boost = clamp(deg / 30, 1.0, 3.0)
         local a = clamp(1 - exp(-preset.smooth * boost * dt * 60), 0, 1)
@@ -187,7 +193,7 @@ NS.Aimbot = (function()
                 nc = cur:Lerp(nc, maxDeg / deg)
             end
         end
-        local j = S.Jitter or 0
+        local j = NS.Settings.Jitter or 0
         if j > 0 then
             local amt = j * 0.01
             nc = nc * CFrame.Angles(
@@ -198,6 +204,7 @@ NS.Aimbot = (function()
         return nc
     end
 
+    -- ================== multiframe history ==================
     local function recordPos(part, now)
         if not part or not part.Parent then
             st.posHistory = {}
@@ -222,7 +229,6 @@ NS.Aimbot = (function()
     end
 
     local function predictiveSmooth(goalCF, dt)
-        local S = NS.Settings
         local cam = NS.Cam.cur or NS.Workspace.CurrentCamera
         if not cam then return goalCF end
         local cur = cam.CFrame
@@ -231,6 +237,7 @@ NS.Aimbot = (function()
             return smooth(goalCF, dt)
         end
 
+        local S = NS.Settings
         local accel = S.PredAccel and calcAccel() or Vector3.zero
         local vel = target.AssemblyLinearVelocity or Vector3.zero
         local velMag = vel.Magnitude
@@ -238,9 +245,11 @@ NS.Aimbot = (function()
         local camRight = cur.RightVector
         local camUp    = cur.UpVector
         local velProj  = Vector2.new(vel:Dot(camRight), vel:Dot(camUp))
-        local fo       = velProj * (dt * 2)
+        local futureOffset = velProj * (dt * 2)
 
-        local leadPos = target.Position + camRight * fo.X + camUp * fo.Y
+        local leadPos = target.Position
+            + camRight * futureOffset.X
+            + camUp    * futureOffset.Y
         if accel.Magnitude > 0 then
             leadPos = leadPos + accel * (dt * dt)
         end
@@ -249,10 +258,10 @@ NS.Aimbot = (function()
         local d = clamp(cur.LookVector:Dot(toLead), -1, 1)
         local ad = math.deg(math.acos(d))
 
-        local ls = clamp(velMag / 50, 0.2, 1.0)
-        local bs = 0.3 * ls
-        local boost = clamp(ad / 30, 1.0, 3.0)
-        local alpha = clamp(bs * boost * dt * 60, 0, 1)
+        local leadStrength = clamp(velMag / 50, 0.2, 1.0)
+        local baseSmooth   = 0.3 * leadStrength
+        local boost        = clamp(ad / 30, 1.0, 3.0)
+        local alpha        = clamp(baseSmooth * boost * dt * 60, 0, 1)
 
         local finalCF = cur:Lerp(lookAt(cur.Position, leadPos), alpha)
 
@@ -267,7 +276,7 @@ NS.Aimbot = (function()
         return finalCF
     end
 
-    -- ================== fov expand ==================
+    -- ================== FOV expand ==================
     local function getFovMult(hasBase)
         local S = NS.Settings
         local now = os.clock()
@@ -276,7 +285,7 @@ NS.Aimbot = (function()
         end
         st.fovMult = 1.0
         if S.FovExpandStationary and not hasBase
-           and (S.FovExpand or isBindActive("FovExpand")) then
+           and (S.FovExpand or NS.isBindActive("FovExpand")) then
             return S.FovExpandStationaryMult or 1.3
         end
         return 1.0
@@ -284,11 +293,12 @@ NS.Aimbot = (function()
 
     local function triggerFovExpand()
         local S = NS.Settings
-        if not S.FovExpand and not isBindActive("FovExpand") then return end
+        if not S.FovExpand and not NS.isBindActive("FovExpand") then return end
         st.fovMult = S.FovExpandMult or 1.3
         st.fovResetAt = os.clock() + (S.FovExpandHold or 0.5)
     end
 
+    -- ================== adaptive / anti-detect ==================
     local function adaptiveFactor()
         local S = NS.Settings
         if not S.AdaptiveFov then return 1.0 end
@@ -304,9 +314,8 @@ NS.Aimbot = (function()
         return base + (math.random() - 0.5) * 0.02
     end
 
-    -- ================== main loop ==================
+    -- ================== main ==================
     local function apply()
-        local S = NS.Settings
         if not shouldAim() then
             st.targetName = nil
             st.target, st.targetPart = nil, nil
@@ -320,6 +329,7 @@ NS.Aimbot = (function()
         if not NS.LP.Character
            or not NS.LP.Character:FindFirstChildOfClass("Humanoid") then return end
 
+        local S = NS.Settings
         local now = os.clock()
         local dt = st.lastFrame > 0 and (now - st.lastFrame) or (1/60)
         st.lastFrame = now
@@ -335,14 +345,15 @@ NS.Aimbot = (function()
             st.lastFilter = S.AimPartList
         end
 
-        local UIS = NS.UIS or game:GetService("UserInputService")
-        local cursor = UIS:GetMouseLocation()
+        local cursor  = NS.UIS:GetMouseLocation()
         local baseFov = S.FOV * adaptiveFactor()
 
         local found = scan(cursor, baseFov * getFovMult(true))
         if not found then
-            local m = getFovMult(false)
-            if m > 1.0 then found = scan(cursor, baseFov * m) end
+            local expanded = getFovMult(false)
+            if expanded > 1.0 then
+                found = scan(cursor, baseFov * expanded)
+            end
         end
 
         -- sticky
@@ -350,7 +361,6 @@ NS.Aimbot = (function()
             local p = st.targetPart
             if p.Parent and st.target and NS.isAlive(st.target)
                and (now - st.lastSeen) < (S.StickyTime or 0.25) then
-
                 local inRadar = false
                 if S.RadarEnabled then
                     local lc = NS.LP.Character
@@ -388,17 +398,17 @@ NS.Aimbot = (function()
             end
         end
 
-        if not found and (S.FovExpand or isBindActive("FovExpand")) then
+        if not found and (S.FovExpand or NS.isBindActive("FovExpand")) then
             triggerFovExpand()
             scan(cursor, baseFov * getFovMult(false))
         end
 
-        -- fallback on 3 failures
+        -- fallback scan on repeated failure
         if not found then
             st.failCount = st.failCount + 1
             if st.failCount >= 3 and (now - st.lastFailTime > 1) then
                 S._UseLegacyScan = true
-                NS.UI.notify("Fallback: legacy scan", "error")
+                if NS.UI then NS.UI.notify("Fallback: legacy scan", "error") end
                 st.lastFailTime = now
                 NS.Scanner.invalidate()
             end
@@ -429,7 +439,7 @@ NS.Aimbot = (function()
             dt)
 
         -- trigger bot
-        if S.TriggerBot or isBindActive("Trigger") then
+        if S.TriggerBot or NS.isBindActive("Trigger") then
             local delay = antiDetectDelay(S.TriggerDelay or 0.1)
             if now - st.lastTrigger >= delay then
                 pcall(function()
@@ -450,33 +460,27 @@ NS.Aimbot = (function()
         st.initialized = true
         NS.safeBind("Aim_Apply", Enum.RenderPriority.Camera.Value - 1, apply)
     end
-
     function M.getTargetName() return st.targetName end
     function M.hasTarget() return st.target ~= nil and st.targetPart ~= nil end
     function M.getTargetPart() return st.targetPart end
-
     function M.addWhitelist(n)
         if not n then return end
-        local S = NS.Settings
-        S.TargetWhitelist[n] = true
-        S.TargetBlacklist[n] = nil
+        NS.Settings.TargetWhitelist[n] = true
+        NS.Settings.TargetBlacklist[n] = nil
     end
     function M.addBlacklist(n)
         if not n then return end
-        local S = NS.Settings
-        S.TargetBlacklist[n] = true
-        S.TargetWhitelist[n] = nil
+        NS.Settings.TargetBlacklist[n] = true
+        NS.Settings.TargetWhitelist[n] = nil
     end
     function M.clearLists()
-        local S = NS.Settings
-        S.TargetWhitelist = {}
-        S.TargetBlacklist = {}
+        NS.Settings.TargetWhitelist = {}
+        NS.Settings.TargetBlacklist = {}
     end
-
     return M
 end)()
 
--- ================== silent aim hook ==================
+-- ================== SILENT AIM HOOK ==================
 do
     local cacheTP, cacheT = nil, 0
     local fireCount, lastReset = 0, 0
@@ -497,11 +501,14 @@ do
         local hmm = rawget(_G, "hookmetamethod")
         local gnm = rawget(_G, "getnamecallmethod")
         if not hmm or not gnm then return end
+
         old = hmm(game, "__namecall", function(self, ...)
             local method = gnm()
-            local args = {...}
+            local args = { ... }
             local S = NS.Settings
-            if (method == "FireServer" or method == "InvokeServer") and S.SilentAim then
+
+            if (method == "FireServer" or method == "InvokeServer")
+               and S.SilentAim then
                 local now = os.clock()
                 if now - lastReset >= 1.0 then
                     fireCount, lastReset = 0, now
