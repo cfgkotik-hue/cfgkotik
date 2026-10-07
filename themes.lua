@@ -1,86 +1,96 @@
 --!nocheck
--- cfgkotik v37 — Themes
+-- cfgkotik v37 — Themes (apply / save / list)
 local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
--- THEMES уже определены в constants.lua, здесь только логика применения.
--- Если constants.lua не загрузился — защитная заглушка, чтобы файл не падал.
-NS.THEMES = NS.THEMES or {}
-NS.SAVED_THEMES = NS.SAVED_THEMES or {}
-
--- ===== APPLY THEME =====
-function NS.applyTheme(name)
-    local t = NS.THEMES[name] or NS.SAVED_THEMES[name]
-    if not t then
+-- ================== APPLY ==================
+function NS.applyTheme(themeName)
+    local theme = NS.THEMES[themeName] or NS.SAVED_THEMES[themeName]
+    if not theme then
         if NS.UI and NS.UI.notify then
-            NS.UI.notify("Theme not found: " .. tostring(name), "error")
+            NS.UI.notify("Theme not found: " .. tostring(themeName), "error")
         end
-        return
+        return false
     end
 
-    -- Menu accent
+    -- menu accent
     if NS.UI and NS.UI.C then
-        NS.UI.C.accent = t.MenuAccent
+        NS.UI.C.accent = theme.MenuAccent
     end
+
+    -- window glow + version label
     local w = NS.UI and NS.UI.window
     if w and w.main then
         local glow = w.main:FindFirstChild("accentGlow")
-        if glow then glow.BackgroundColor3 = t.MenuAccent end
-        if w.verLabel then w.verLabel.TextColor3 = t.MenuAccent end
+        if glow then glow.BackgroundColor3 = theme.MenuAccent end
+        if w.verLabel then w.verLabel.TextColor3 = theme.MenuAccent end
     end
 
-    -- Apply to Settings (safe: only if Settings exists)
+    -- settings colors
     local S = NS.Settings
     if S then
-        local map = {
-            AimColor = "FovColor",
-            AimColorLocked = "FovColorLocked",
-            ESPColor = "ESPColor",
-            HudLogoColor = "HudLogo",
-            HudFpsColor = "HudFps",
-            HudTargetColor = "HudTarget",
-            RadarPlayerColor = "RadarPlayer",
-            RadarNPCColor = "RadarNPC",
-        }
-        for k, tk in pairs(map) do
-            if t[tk] ~= nil then S[k] = t[tk] end
-        end
-        S.CurrentTheme = name
+        S.AimColor         = theme.FovColor
+        S.AimColorLocked   = theme.FovColorLocked
+        S.ESPColor         = theme.ESPColor
+        S.HudLogoColor     = theme.HudLogo
+        S.HudFpsColor      = theme.HudFps
+        S.HudTargetColor   = theme.HudTarget
+        S.RadarPlayerColor = theme.RadarPlayer
+        S.RadarNPCColor    = theme.RadarNPC
+        S.CurrentTheme     = themeName
     end
 
-    -- Refresh
+    -- redraw UI + HUD
     if NS.UI and NS.UI.refresh then NS.UI.refresh() end
     if NS.HUD and NS.HUD.applyColors then NS.HUD.applyColors() end
+
     if NS.UI and NS.UI.notify then
-        NS.UI.notify("Theme: " .. name, "success")
+        NS.UI.notify("Theme: " .. themeName, "success")
     end
+    return true
 end
 
--- ===== SAVE CURRENT AS THEME =====
+-- ================== SAVE ==================
 function NS.saveTheme(name)
-    if not name or name == "" then name = "custom" end
+    name = name or NS.Settings and NS.Settings.CustomThemeName or "custom"
+    if name == "" then name = "custom" end
+
     local S = NS.Settings
     local C = NS.UI and NS.UI.C
     if not S or not C then
         if NS.UI and NS.UI.notify then
-            NS.UI.notify("Cannot save — UI/Settings not ready", "error")
+            NS.UI.notify("Cannot save — UI not ready", "error")
         end
-        return
+        return false
     end
+
     NS.SAVED_THEMES[name] = {
-        MenuAccent = C.accent,
-        ESPColor = S.ESPColor,
-        FovColor = S.AimColor,
+        MenuAccent     = C.accent,
+        ESPColor       = S.ESPColor,
+        FovColor       = S.AimColor,
         FovColorLocked = S.AimColorLocked,
-        HudLogo = S.HudLogoColor,
-        HudFps = S.HudFpsColor,
-        HudTarget = S.HudTargetColor,
-        RadarPlayer = S.RadarPlayerColor,
-        RadarNPC = S.RadarNPCColor,
+        HudLogo        = S.HudLogoColor,
+        HudFps         = S.HudFpsColor,
+        HudTarget      = S.HudTargetColor,
+        RadarPlayer    = S.RadarPlayerColor,
+        RadarNPC       = S.RadarNPCColor,
     }
+
     if NS.UI and NS.UI.notify then
         NS.UI.notify("Theme saved: " .. name, "success")
     end
+    return true
+end
+
+-- ================== LIST ==================
+function NS.listThemes()
+    local out = {}
+    for name in pairs(NS.THEMES) do out[#out+1] = name end
+    table.sort(out)
+    local saved = {}
+    for name in pairs(NS.SAVED_THEMES) do saved[#saved+1] = name end
+    table.sort(saved)
+    return out, saved
 end
 
 return NS
