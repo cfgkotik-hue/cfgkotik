@@ -1,24 +1,20 @@
 --!nocheck
--- cfgkotik v37 — Hitbox expander (per-player BasePart size multiplier)
+-- cfgkotik v37 — Hitbox Expander (per-player BasePart size multiplier)
 local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
-local isBindActive = function(id)
-    if NS.isBindActive then return NS.isBindActive(id) end
-    return false
-end
-
 do
     local orig = {}          -- orig[part] = { size = Vector3 }
-    local lastSize = nil
+    local lastSize = nil     -- last applied HitboxSize (for change detection)
 
+    -- ================== should expand ==================
     local function shouldExpand(name)
-        local S = NS.Settings
-        local sel = S.HitboxPartList or {}
+        local sel = NS.Settings.HitboxPartList or {}
         local grp = NS.partGroup(name)
         return grp and sel[grp] == true
     end
 
+    -- ================== revert single ==================
     local function revert(part)
         local o = orig[part]
         if not o then return end
@@ -26,11 +22,15 @@ do
         orig[part] = nil
     end
 
+    -- ================== revert all ==================
     local function revertAll()
-        for p in pairs(orig) do revert(p) end
+        for p in pairs(orig) do
+            revert(p)
+        end
         lastSize = nil
     end
 
+    -- ================== apply to all players ==================
     local function applyAll()
         local S = NS.Settings
         local mult = S.HitboxSize or 5
@@ -42,6 +42,7 @@ do
                     if p:IsA("BasePart")
                        and shouldExpand(p.Name)
                        and not NS.isBadPart(p) then
+
                         if sizeChanged and orig[p] then
                             p.Size = orig[p].size * mult
                         elseif not orig[p] then
@@ -63,10 +64,10 @@ do
         lastSize = mult
     end
 
+    -- ================== main loop ==================
     task.spawn(function()
         while task.wait(0.15) do
-            local S = NS.Settings
-            local on = S.HitboxExpand or isBindActive("Hitbox")
+            local on = NS.Settings.HitboxExpand or NS.isBindActive("Hitbox")
             if on then
                 applyAll()
             elseif next(orig) ~= nil then
