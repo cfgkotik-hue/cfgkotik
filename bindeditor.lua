@@ -17,80 +17,84 @@ NS.BindEditor = (function()
         end
     end
 
-    -- ================== create window ==================
-    local function makeWindow()
-        sg = Instance.new("ScreenGui")
-        sg.Name = "cfgkotik_bindeditor"
-        sg.ResetOnSpawn = false
-        sg.IgnoreGuiInset = true
-        sg.DisplayOrder = 400
-        NS.protectGui(sg)
-        sg.Parent = NS.getParentGui()
+    -- ================== open ==================
+    function M.open()
+        if sg then M.close() end
 
+        sg = Instance.new("ScreenGui")
+        sg.Name = "cfgkotik_bindeditor"; sg.ResetOnSpawn = false
+        sg.IgnoreGuiInset = true; sg.DisplayOrder = 400
+        NS.protectGui(sg); sg.Parent = NS.getParentGui()
+
+        local UI = NS.UI
+        local C  = UI.C
+
+        -- ================== window ==================
         local win = Instance.new("Frame")
-        win.Size = UDim2.new(0, 420, 0, 340)
-        win.Position = UDim2.new(0.5, -210, 0.5, -170)
-        win.BackgroundColor3 = NS.UI.C.popupBg
+        win.Size = UDim2.new(0,420,0,340)
+        win.Position = UDim2.new(0.5,-210,0.5,-170)
+        win.BackgroundColor3 = C.popupBg
         win.BorderSizePixel = 0
         win.Active = true
         win.Parent = sg
-        NS.UI.corner(win, 10)
-        NS.UI.stroke(win, NS.UI.C.accent, 2)
+        UI.corner(win, 10)
+        UI.stroke(win, C.accent, 2)
 
         local title = Instance.new("TextLabel")
-        title.Size = UDim2.new(1, -40, 0, 30)
+        title.Size = UDim2.new(1,-40,0,30)
         title.BackgroundTransparency = 1
         title.Text = "BIND EDITOR"
-        title.TextColor3 = NS.UI.C.text
+        title.TextColor3 = C.text
         title.Font = Enum.Font.GothamBold
         title.TextSize = 13
         title.TextXAlignment = Enum.TextXAlignment.Left
-        title.Position = UDim2.new(0, 14, 0, 0)
+        title.Position = UDim2.new(0,14,0,0)
         title.Parent = win
 
         local closeBtn = Instance.new("TextButton")
-        closeBtn.Size = UDim2.new(0, 24, 0, 24)
-        closeBtn.Position = UDim2.new(1, -30, 0, 3)
-        closeBtn.BackgroundColor3 = NS.UI.C.danger
+        closeBtn.Size = UDim2.new(0,24,0,24)
+        closeBtn.Position = UDim2.new(1,-30,0,3)
+        closeBtn.BackgroundColor3 = C.danger
         closeBtn.Text = "✕"
-        closeBtn.TextColor3 = NS.UI.C.text
+        closeBtn.TextColor3 = C.text
         closeBtn.Font = Enum.Font.GothamBold
         closeBtn.TextSize = 12
         closeBtn.BorderSizePixel = 0
         closeBtn.Parent = win
-        NS.UI.corner(closeBtn, 5)
+        UI.corner(closeBtn, 5)
         closeBtn.MouseButton1Click:Connect(M.close)
 
+        -- ================== scroll ==================
         local scroll = Instance.new("ScrollingFrame")
-        scroll.Size = UDim2.new(1, -20, 1, -60)
-        scroll.Position = UDim2.new(0, 10, 0, 40)
+        scroll.Size = UDim2.new(1,-20,1,-60)
+        scroll.Position = UDim2.new(0,10,0,40)
         scroll.BackgroundTransparency = 1
         scroll.BorderSizePixel = 0
         scroll.ScrollBarThickness = 4
-        scroll.ScrollBarImageColor3 = NS.UI.C.accent
-        scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+        scroll.ScrollBarImageColor3 = C.accent
+        scroll.CanvasSize = UDim2.new(0,0,0,0)
         scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
         scroll.Parent = win
         local lay = Instance.new("UIListLayout", scroll)
-        lay.Padding = UDim.new(0, 4)
+        lay.Padding = UDim.new(0,4)
         lay.SortOrder = Enum.SortOrder.LayoutOrder
 
         -- ================== rows ==================
         for _, entry in ipairs(NS.BindList) do
             local row = Instance.new("Frame")
-            row.Size = UDim2.new(1, -8, 0, 30)
-            row.BackgroundColor3 = NS.UI.C.card
+            row.Size = UDim2.new(1,-8,0,30)
+            row.BackgroundColor3 = C.card
             row.BorderSizePixel = 0
             row.Parent = scroll
-            NS.UI.corner(row, 5)
-            NS.UI.stroke(row, NS.UI.C.border, 1)
+            UI.corner(row, 5)
+            UI.stroke(row, C.border, 1)
 
             local lbl = Instance.new("TextLabel")
-            lbl.Size = UDim2.new(0, 140, 1, 0)
-            lbl.Position = UDim2.new(0, 10, 0, 0)
+            lbl.Size = UDim2.new(0,140,1,0)
+            lbl.Position = UDim2.new(0,10,0,0)
             lbl.BackgroundTransparency = 1
             lbl.Text = entry.label
-            lbl.TextColor3 = NS.UI.C.text
+            lbl.TextColor3 = C.text
             lbl.Font = Enum.Font.Gotham
             lbl.TextSize = 11
             lbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -98,26 +102,35 @@ NS.BindEditor = (function()
 
             -- key button
             local keyBtn = Instance.new("TextButton")
-            keyBtn.Size = UDim2.new(0, 80, 0, 22)
-            keyBtn.Position = UDim2.new(0, 150, 0.5, -11)
-            keyBtn.BackgroundColor3 = NS.UI.C.track
+            keyBtn.Size = UDim2.new(0,80,0,22)
+            keyBtn.Position = UDim2.new(0,150,0.5,-11)
+            keyBtn.BackgroundColor3 = C.track
             keyBtn.Text = NS.keyLabel(NS.getBindKey(entry.id))
-            keyBtn.TextColor3 = NS.UI.C.text
+            keyBtn.TextColor3 = C.text
             keyBtn.Font = Enum.Font.GothamBold
             keyBtn.TextSize = 10
             keyBtn.BorderSizePixel = 0
             keyBtn.Parent = row
-            NS.UI.corner(keyBtn, 4)
+            UI.corner(keyBtn, 4)
 
             keyBtn.MouseButton1Click:Connect(function()
-                if NS.UI.listening then return end
-                NS.UI.listening = true
+                if UI.listening then return end
+                UI.listening = true
                 keyBtn.Text = "..."
-                keyBtn.BackgroundColor3 = NS.UI.C.accent
+                keyBtn.BackgroundColor3 = C.accent
 
                 local conn
                 task.spawn(function()
                     task.wait(0.05)
+                    if not UI.listening then return end
+
+                    local function stop()
+                        if conn then conn:Disconnect(); conn = nil end
+                        UI.listening = false
+                        keyBtn.Text = NS.keyLabel(NS.getBindKey(entry.id))
+                        keyBtn.BackgroundColor3 = C.track
+                    end
+
                     conn = UIS.InputBegan:Connect(function(input)
                         local done = false
                         if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -136,10 +149,7 @@ NS.BindEditor = (function()
                         end
 
                         if done then
-                            keyBtn.Text = NS.keyLabel(NS.getBindKey(entry.id))
-                            keyBtn.BackgroundColor3 = NS.UI.C.track
-                            NS.UI.listening = false
-                            if conn then conn:Disconnect(); conn = nil end
+                            stop()
                             if NS.BindStrip and NS.BindStrip.rebuild then
                                 NS.BindStrip.rebuild()
                             end
@@ -150,16 +160,17 @@ NS.BindEditor = (function()
 
             -- mode button
             local modeBtn = Instance.new("TextButton")
-            modeBtn.Size = UDim2.new(0, 70, 0, 22)
-            modeBtn.Position = UDim2.new(0, 240, 0.5, -11)
-            modeBtn.BackgroundColor3 = NS.UI.C.track
+            modeBtn.Size = UDim2.new(0,70,0,22)
+            modeBtn.Position = UDim2.new(0,240,0.5,-11)
+            modeBtn.BackgroundColor3 = C.track
             modeBtn.Text = NS.getBindMode(entry.id)
-            modeBtn.TextColor3 = NS.UI.C.text
+            modeBtn.TextColor3 = C.text
             modeBtn.Font = Enum.Font.GothamBold
             modeBtn.TextSize = 10
             modeBtn.BorderSizePixel = 0
             modeBtn.Parent = row
-            NS.UI.corner(modeBtn, 4)
+            UI.corner(modeBtn, 4)
+
             modeBtn.MouseButton1Click:Connect(function()
                 local cur = NS.getBindMode(entry.id)
                 local nxt = (cur == "Hold") and "Toggle" or "Hold"
@@ -169,16 +180,16 @@ NS.BindEditor = (function()
 
             -- delete button
             local delBtn = Instance.new("TextButton")
-            delBtn.Size = UDim2.new(0, 28, 0, 22)
-            delBtn.Position = UDim2.new(1, -38, 0.5, -11)
-            delBtn.BackgroundColor3 = NS.UI.C.danger
+            delBtn.Size = UDim2.new(0,28,0,22)
+            delBtn.Position = UDim2.new(1,-38,0.5,-11)
+            delBtn.BackgroundColor3 = C.danger
             delBtn.Text = "🗑"
-            delBtn.TextColor3 = NS.UI.C.text
+            delBtn.TextColor3 = C.text
             delBtn.Font = Enum.Font.GothamBold
             delBtn.TextSize = 11
             delBtn.BorderSizePixel = 0
             delBtn.Parent = row
-            NS.UI.corner(delBtn, 4)
+            UI.corner(delBtn, 4)
             delBtn.MouseButton1Click:Connect(function()
                 NS.setBindKey(entry.id, nil)
                 keyBtn.Text = "—"
@@ -187,35 +198,29 @@ NS.BindEditor = (function()
                 end
             end)
 
-            -- live row highlight when active
+            -- live active row highlight
             task.spawn(function()
                 while row.Parent do
                     local active = NS.isBindActive(entry.id)
-                    row.BackgroundColor3 = active and NS.UI.C.green or NS.UI.C.card
+                    row.BackgroundColor3 = active and C.green or C.card
                     task.wait(0.1)
                 end
             end)
         end
 
-        -- ================== OK button ==================
+        -- ================== OK ==================
         local okBtn = Instance.new("TextButton")
-        okBtn.Size = UDim2.new(0, 110, 0, 28)
-        okBtn.Position = UDim2.new(1, -122, 1, -36)
-        okBtn.BackgroundColor3 = NS.UI.C.accent
+        okBtn.Size = UDim2.new(0,110,0,28)
+        okBtn.Position = UDim2.new(1,-122,1,-36)
+        okBtn.BackgroundColor3 = C.accent
         okBtn.Text = "Close"
-        okBtn.TextColor3 = NS.UI.C.text
+        okBtn.TextColor3 = C.text
         okBtn.Font = Enum.Font.GothamBold
         okBtn.TextSize = 12
         okBtn.BorderSizePixel = 0
         okBtn.Parent = win
-        NS.UI.corner(okBtn, 6)
+        UI.corner(okBtn, 6)
         okBtn.MouseButton1Click:Connect(M.close)
-    end
-
-    -- ================== open ==================
-    function M.open()
-        if sg then M.close() end
-        makeWindow()
     end
 
     return M
