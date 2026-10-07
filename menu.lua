@@ -44,18 +44,16 @@ function NS.buildMenu()
         NS.Aimbot.clearLists(); UI.notify("Lists cleared", "success")
     end)
 
-    local sBehavior = UI.section(aimTab, "BEHAVIOR")
+           local sBehavior = UI.section(aimTab, "BEHAVIOR")
     UI.slider(sBehavior, "FOV Radius", "FOV", 10, 800, 5,
         function(v) return tostring(math.floor(v)) end)
     UI.toggle(sBehavior, "Show FOV Circle", "ShowFov")
     UI.colorPalette(sBehavior, "FOV Color", "AimColor")
     UI.colorPalette(sBehavior, "FOV Color (Locked)", "AimColorLocked")
-    UI.dropdown(sBehavior, "Smoothing", "AimSmoothMode", {"Smooth", "Ultra", "Soft"})
+    UI.slider(sBehavior, "Smoothing (1 = instant)", "AimSmooth", 1, 20, 1,
+        function(v) return tostring(math.floor(v)) end)
     UI.slider(sBehavior, "Prediction (ping)", "PredAmount", 0, 3, 0.1,
         function(v) return string.format("%.1fx", v) end)
-    UI.toggle(sBehavior, "Velocity Prediction", "PredAccel")
-    UI.slider(sBehavior, "Prediction History", "PredHistory", 2, 8, 1,
-        function(v) return tostring(math.floor(v)) .. " frames" end)
     UI.toggle(sBehavior, "Gravity Compensation", "AimGravityComp")
     UI.slider(sBehavior, "Hit Chance", "HitChance", 0, 100, 1,
         function(v) return tostring(math.floor(v)) .. "%" end)
@@ -73,27 +71,6 @@ function NS.buildMenu()
     UI.toggle(sAdvanced, "Trigger Bot", "TriggerBot")
     UI.slider(sAdvanced, "Trigger Delay", "TriggerDelay", 0.01, 1, 0.01,
         function(v) return string.format("%.2fs", v) end)
-    UI.toggle(sAdvanced, "Anti-Detect Jitter", "AntiDetectionJitter")
-    UI.toggle(sAdvanced, "FOV Expand", "FovExpand")
-    UI.slider(sAdvanced, "Expand Multiplier", "FovExpandMult", 1.1, 3.0, 0.1,
-        function(v) return string.format("×%.1f", v) end)
-    UI.slider(sAdvanced, "Expand Hold", "FovExpandHold", 0.1, 2.0, 0.1,
-        function(v) return string.format("%.1fs", v) end)
-    UI.toggle(sAdvanced, "Adaptive FOV on low FPS", "AdaptiveFov")
-    UI.slider(sAdvanced, "Adaptive Factor", "AdaptiveFovFactor", 0.5, 1.0, 0.05,
-        function(v) return string.format("×%.2f", v) end)
-    UI.slider(sAdvanced, "Sticky Time", "StickyTime", 0, 1, 0.05,
-        function(v) return string.format("%.2fs", v) end)
-    UI.dropdown(sAdvanced, "Sticky Mode", "AimStickyMode", {"Strict", "Soft"},
-        function(v) NS.Settings.AimStickyStrict = (v == "Strict") end)
-
-    local sParry = UI.section(aimTab, "AUTO-PARRY")
-    UI.toggle(sParry, "Enable", "AutoParry")
-    UI.keybind(sParry, "Parry Key", "AutoParryKey")
-    UI.slider(sParry, "Offset", "AutoParryOffset", 0.01, 0.5, 0.01,
-        function(v) return string.format("%.2fs", v) end)
-    UI.slider(sParry, "Range", "AutoParryRange", 5, 100, 5,
-        function(v) return tostring(math.floor(v)) .. "m" end)
 
     -- ═══════════════════════════════════════════════════
     -- 2. VISUAL
