@@ -1,23 +1,12 @@
 --!nocheck
--- cfgkotik v37 — Bind Strip + Bind System (getKey / getMode / isBindActive)
+-- cfgkotik v37 — Bind Strip + Bind System (shared get/set/active + strip UI)
 local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
 local UIS = NS.UIS
-local TW  = NS.Tween
 
--- ================== bind state (shared) ==================
-local BindList = NS.BindList or {
-    { id="AimKey",     label="Aim Key",     icon="🎯", short="A" },
-    { id="FovExpand",  label="FOV Expand",  icon="🔭", short="F" },
-    { id="Trigger",    label="Trigger Bot", icon="⚡", short="T" },
-    { id="Hitbox",     label="Hitbox",      icon="📦", short="H" },
-    { id="Visibility", label="Visibility",  icon="👁", short="V" },
-    { id="Speed",      label="SpeedHack",   icon="💨", short="S" },
-    { id="Fly",        label="Fly",         icon="🕊", short="Y" },
-}
-NS.BindList = BindList
-
+-- ================== BIND STATE ==================
+local BindList = NS.BindList or {}
 local BindStates = {}
 for _, b in ipairs(BindList) do
     BindStates[b.id] = { down = false, toggle = false }
@@ -30,6 +19,7 @@ local function ensure(id)
     return BindStates[id]
 end
 
+-- ================== PUBLIC API ==================
 function NS.getBindKey(id)
     return NS.Settings["Bind"..id.."Key"]
 end
@@ -51,7 +41,9 @@ end
 function NS.isBindActive(id)
     local s = BindStates[id]
     if not s then return false end
-    if NS.getBindMode(id) == "Hold" then return s.down == true end
+    if NS.getBindMode(id) == "Hold" then
+        return s.down == true
+    end
     return s.toggle == true
 end
 
@@ -62,21 +54,54 @@ function NS.anyBindBound()
     return false
 end
 
--- ================== strip ==================
+function NS.ensureBindState(id)
+    return ensure(id)
+end
+
+-- ================== BIND LISTENERS ==================
+UIS.InputBegan:Connect(function(input)
+    if NS.UI and NS.UI.listening then return end
+    for _, entry in ipairs(BindList) do
+        local key = NS.getBindKey(entry.id)
+        if key and NS.bindMatches(key, input) then
+            local s = ensure(entry.id)
+            if NS.getBindMode(entry.id) == "Hold" then
+                s.down = true
+            else
+                s.toggle = not s.toggle
+            end
+        end
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    for _, entry in ipairs(BindList) do
+        local key = NS.getBindKey(entry.id)
+        if key and NS.bindMatches(key, input) then
+            if NS.getBindMode(entry.id) == "Hold" then
+                local s = ensure(entry.id)
+                s.down = false
+            end
+        end
+    end
+end)
+
+-- ================== BIND STRIP UI ==================
 NS.BindStrip = (function()
     local M = {}
     local sg, strip = nil, nil
     local dots = {}
 
-    -- ================== helpers ==================
+    -- ================== label formatter ==================
     local function labelFor(entry)
         local mode = NS.Settings.BindStripLabel or "short"
         if mode == "short" then return entry.short end
-        if mode == "icon"  then return entry.icon end
-        if mode == "none"  then return "" end
+        if mode == "icon"  then return entry.icon  end
+        if mode == "none"  then return ""          end
         return entry.label
     end
 
+    -- ================== preset positions ==================
     local function computePreset(preset)
         local cam = NS.Workspace.CurrentCamera
         if not cam then return Vector2.new(486, 680) end
@@ -120,12 +145,9 @@ NS.BindStrip = (function()
     -- ================== create ==================
     local function create()
         sg = Instance.new("ScreenGui")
-        sg.Name = "cfgkotik_bindstrip"
-        sg.ResetOnSpawn = false
-        sg.IgnoreGuiInset = true
-        sg.DisplayOrder = 190
-        NS.protectGui(sg)
-        sg.Parent = NS.getParentGui()
+        sg.Name = "cfgkotik_bindstrip"; sg.ResetOnSpawn = false
+        sg.IgnoreGuiInset = true; sg.DisplayOrder = 190
+        NS.protectGui(sg); sg.Parent = NS.getParentGui()
 
         strip = Instance.new("Frame")
         strip.AutomaticSize = Enum.AutomaticSize.X
@@ -138,7 +160,6 @@ NS.BindStrip = (function()
         strip.BorderSizePixel = 0
         strip.Active = true
         strip.Parent = sg
-
         NS.UI.corner(strip, 8)
         NS.UI.stroke(strip, NS.UI.C.border, 1)
 
@@ -154,7 +175,7 @@ NS.BindStrip = (function()
         lay.VerticalAlignment = Enum.VerticalAlignment.Center
         lay.SortOrder = Enum.SortOrder.LayoutOrder
 
-        -- drag
+        -- drag (only when menu open)
         local drag, ds, sa = false, nil, nil
         strip.InputBegan:Connect(function(i)
             if i.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
@@ -185,7 +206,7 @@ NS.BindStrip = (function()
         end)
     end
 
-    -- ================== dots ==================
+    -- ================== dot ==================
     local function makeDot(entry, order)
         local sz = NS.Settings.BindStripSize or 14
         local dot = Instance.new("TextButton")
@@ -218,12 +239,10 @@ NS.BindStrip = (function()
             end
         end
 
-        -- click toggle for toggle-mode binds
         dot.MouseButton1Click:Connect(function()
             if not NS.getBindKey(entry.id) then return end
-            local mode = NS.getBindMode(entry.id)
             local s = ensure(entry.id)
-            if mode == "Toggle" then
+            if NS.getBindMode(entry.id) == "Toggle" then
                 s.toggle = not s.toggle
             end
             refresh()
@@ -233,6 +252,7 @@ NS.BindStrip = (function()
         refresh()
     end
 
+    -- ================== rebuild ==================
     function M.rebuild()
         if not strip then return end
         for _, d in pairs(dots) do
@@ -265,7 +285,6 @@ NS.BindStrip = (function()
                 local vp = cam and cam.ViewportSize or Vector2.new(1280, 720)
                 local S = NS.Settings
 
-                -- preset follow
                 if S.BindStripPosition ~= "Custom" then
                     if S.BindStripPosition ~= lastPreset
                        or (lastVp and (vp - lastVp).Magnitude > 1) then
