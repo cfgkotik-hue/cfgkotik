@@ -23,33 +23,21 @@ NS.ESPCache = (function()
     function M.shouldUpdate(entity, now)
         local S = NS.Settings
         if not S.PerfCacheESP then return true end
-
         local e = M.get(entity)
-
-        -- throttle: not yet interval
         if now - e.lastUpdate < (S.ESPCacheInterval or 0.05) then
             return false
         end
-
-        -- skip if hasn't moved enough
         if (entity.root.Position - e.lastPos).Magnitude
            < (S.ESPMoveThreshold or 5) then
             return false
         end
-
         return true
     end
 
-    function M.update(entity, screenPos, now)
+    function M.update(entity, now)
         local e = M.get(entity)
         e.lastPos = entity.root.Position
-        e.lastScreen = screenPos
         e.lastUpdate = now
-    end
-
-    function M.lastScreen(entity)
-        local e = cache[entity]
-        return e and e.lastScreen or nil
     end
 
     function M.clear()
