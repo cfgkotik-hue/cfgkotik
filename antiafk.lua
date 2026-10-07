@@ -6,7 +6,7 @@ if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 NS.AntiAFK = (function()
     local M = {}
     local lastChat = 0
-    local chatCooldown = 60
+    local CHAT_COOLDOWN = 60
 
     -- ================== movement ==================
     local function randomMove()
@@ -44,7 +44,7 @@ NS.AntiAFK = (function()
     -- ================== chat spam ==================
     local function chatSpam()
         local now = os.clock()
-        if now - lastChat < chatCooldown then return end
+        if now - lastChat < CHAT_COOLDOWN then return end
         lastChat = now
 
         local S = NS.Settings
@@ -63,13 +63,12 @@ NS.AntiAFK = (function()
                     return
                 end
             end
-
-            -- fallback for newer chat
+            -- alternate path for newer chat
             local txt = RS:FindFirstChild("DefaultChatSystemChatEvents")
             if txt then
-                local channel = txt:FindFirstChild("SayMessageRequest")
-                if channel then
-                    channel:FireServer(msg, "All")
+                local ch = txt:FindFirstChild("SayMessageRequest")
+                if ch then
+                    ch:FireServer(msg, "All")
                 end
             end
         end)
@@ -89,7 +88,7 @@ NS.AntiAFK = (function()
         end
     end)
 
-    -- ================== public API ==================
+    -- ================== public ==================
     function M.ping()
         randomMove()
         randomCamera()
