@@ -16,7 +16,7 @@ local cache = {
 }
 local last = {}
 
--- snapshot originals
+-- ================== snapshot originals ==================
 do
     local atm = Lighting:FindFirstChildOfClass("Atmosphere")
     if atm then
