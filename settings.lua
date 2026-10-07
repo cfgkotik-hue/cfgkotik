@@ -1,38 +1,61 @@
 --!nocheck
+-- cfgkotik v37 — Settings (single source of truth)
 local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
 NS.Settings = {
-    Aimbot=false, AimKey=Enum.KeyCode.E, AimMode="Hold", AimSmoothMode="Smooth",
-    FOV=120, TeamCheck=false, ShowFov=true,
-    AimColor=Color3.fromRGB(140,100,255), AimColorLocked=Color3.fromRGB(255,80,120),
-    AimPartList={Head=true,Torso=false,Limbs=false}, Priority="FOV", Visibility=true,
-    HitChance=100, Jitter=0, PredAmount=1.0, StickyTime=0.25,
+    -- ================== AIMBOT ==================
+    Aimbot=false, AimKey=Enum.KeyCode.E, AimMode="Hold",
+    AimSmoothMode="Smooth", FOV=120, TeamCheck=false,
+    ShowFov=true, AimColor=Color3.fromRGB(140,100,255),
+    AimColorLocked=Color3.fromRGB(255,80,120),
+    AimPartList={Head=true, Torso=false, Limbs=false},
+    Priority="FOV", Visibility=true, HitChance=100,
+    Jitter=0, PredAmount=1.0, StickyTime=0.25,
     AimStickyStrict=true, AimGravityComp=true,
     FovExpand=false, FovExpandMult=1.3, FovExpandHold=0.5,
     FovExpandStationary=false, FovExpandStationaryMult=1.3,
     AdaptiveFov=true, AdaptiveFovFactor=0.8,
+
     SilentAim=false, SilentAimMaxFireRate=60,
-    TriggerBot=false, TriggerDelay=0.1, AntiDetectionJitter=false,
+    TriggerBot=false, TriggerDelay=0.1,
+    AntiDetectionJitter=false,
     HitboxExpand=false, HitboxSize=5,
-    HitboxPartList={Head=true,Torso=true,Limbs=true},
+    HitboxPartList={Head=true, Torso=true, Limbs=true},
+
+    -- ================== SCANNER ==================
     TargetNPCs=false, TargetPlayers=true,
     ScanIgnorePatterns={"dummy","target","practice","npc_","prop_","vehicle","car","bike","crate"},
-    ScanStrictRig=true, ScanMaxDist=3000, ScanInterval=0.2,
-    ScanVisibilityInterval=0.15, ScanMaxEntities=200,
-    DetectorDebug=false, _UseLegacyScan=false,
-    ESP=false, ESPBox=true, ESPName=true, ESPDistance=false,
-    ESPHealth=true, ESPHighlight=false, ESPHighlightOccluded=false,
-    ESPHighlightMode="AlwaysOnTop", ESPTracers=false, ESPWeapon=true,
-    ESPBoxStyle="full", ESPColor=Color3.fromRGB(230,80,100),
+    ScanStrictRig=true, ScanMaxDist=3000,
+    ScanInterval=0.2, ScanVisibilityInterval=0.15,
+    ScanMaxEntities=200,
+    DetectorDebug=false,
+    _UseLegacyScan=false,
+
+    -- ================== ESP ==================
+    ESP=false,
+    ESPBox=true, ESPName=true, ESPDistance=false,
+    ESPHealth=true, ESPHighlight=false,
+    ESPHighlightOccluded=false, ESPHighlightMode="AlwaysOnTop",
+    ESPTracers=false, ESPWeapon=true, ESPBoxStyle="full",
+    ESPColor=Color3.fromRGB(230,80,100),
     ESPTracerFrom="Bottom", ESPMaxDist=2000,
     ESPShowPlayers=true, ESPShowNPCs=true,
-    ESPVisibilityCheck=true, ESPShowVisLabel=true, ESPUpdateRate=0.03,
-    ESPDistanceColors=false, ESPNearThreshold=50, ESPMidThreshold=200,
-    ESPNearColor=Color3.fromRGB(255,69,58), ESPMidColor=Color3.fromRGB(255,214,10),
+    ESPVisibilityCheck=true, ESPShowVisLabel=true,
+    ESPUpdateRate=0.03,
+    ESPDistanceColors=false,
+    ESPNearThreshold=50, ESPMidThreshold=200,
+    ESPNearColor=Color3.fromRGB(255,69,58),
+    ESPMidColor=Color3.fromRGB(255,214,10),
     ESPFarColor=Color3.fromRGB(52,199,89),
-    SpeedHack=false, Speed=50, Fly=false, FlySpeed=80,
-    JumpPower=50, JumpPowerEnable=false, InfiniteJump=false, Noclip=false,
+
+    -- ================== MOVEMENT ==================
+    SpeedHack=false, Speed=50,
+    Fly=false, FlySpeed=80,
+    JumpPower=50, JumpPowerEnable=false,
+    InfiniteJump=false, Noclip=false,
+
+    -- ================== WORLD ==================
     WorldRain=false, WorldRainRate=300, WorldRainSpeed=90, WorldRainSize=0.08,
     WorldSnow=false, WorldSnowRate=200, WorldSnowSpeed=4, WorldSnowSize=0.25,
     WorldThunder=false, WorldThunderMin=3, WorldThunderMax=8, WorldThunderBright=60,
@@ -40,20 +63,28 @@ NS.Settings = {
     WorldVignette=false, WorldVignetteStrength=0.15,
     WorldColorShift=false, WorldColorShiftColor=Color3.fromRGB(80,40,120),
     WorldBlur=false, WorldBlurSize=4,
+
     ThirdPerson=false, ThirdPersonDistance=10,
     CameraFov=false, CameraFovAmount=1.0,
+
+    -- ================== AUTOMATION ==================
     AutoParry=false, AutoParryOffset=0.05,
     AutoParryKey=Enum.KeyCode.F, AutoParryRange=30,
     AutoLoot=false, AutoLootMode="Prompt",
     AutoLootNames={"coin","gem","chest","drop","loot","crystal","orb"},
     AutoLootMaxDist=100, AutoLootInterval=0.2,
-    AntiAFK=false, AntiAFKInterval=30, AntiAFKChatSpam=false,
+    AntiAFK=false, AntiAFKInterval=30,
+    AntiAFKChatSpam=false,
     AntiAFKChatPhrases={"still here","gg","nice"},
+
+    -- ================== RADAR ==================
     RadarEnabled=false, RadarSize=180, RadarScale=0.7,
     RadarRange=300, RadarPosition="TopRight",
     RadarShowPlayers=true, RadarShowNPCs=false,
     RadarPlayerColor=Color3.fromRGB(230,80,100),
     RadarNPCColor=Color3.fromRGB(255,200,60),
+
+    -- ================== BINDS ==================
     BindAimKeyKey=nil, BindAimKeyMode="Hold",
     BindFovExpandKey=nil, BindFovExpandMode="Toggle",
     BindTriggerKey=nil, BindTriggerMode="Toggle",
@@ -64,7 +95,10 @@ NS.Settings = {
     BindStripEnabled=true, BindStripLabel="short",
     BindStripSize=14, BindStripX=486, BindStripY=680,
     BindStripPosition="Bottom Center",
-    CurrentBindProfile="default", BindProfiles={},
+    CurrentBindProfile="default",
+    BindProfiles={},
+
+    -- ================== HUD ==================
     HudShowLogo=true, HudShowTime=true, HudShowFps=true,
     HudShowPing=true, HudShowTarget=true, HudShowEntities=false,
     HudShowCombatStats=false,
@@ -75,17 +109,30 @@ NS.Settings = {
     HudPingColor=Color3.fromRGB(255,189,46),
     HudTargetColor=Color3.fromRGB(230,80,100),
     HudEntitiesColor=Color3.fromRGB(170,170,185),
-    MenuKey=Enum.KeyCode.RightShift, CurrentConfig="default",
-    TargetWhitelist={}, TargetBlacklist={}, TargetHistory={},
-    AutoOptimize=false, MinFpsThreshold=45,
+
+    -- ================== MISC ==================
+    MenuKey=Enum.KeyCode.RightShift,
+    CurrentConfig="default",
+    TargetWhitelist={},
+    TargetBlacklist={},
+    TargetHistory={},
+    AutoOptimize=false,
+    MinFpsThreshold=45,
+
+    -- ================== PERF ==================
     PerfSpatialGrid=true, PerfCacheESP=true, PerfBatchVis=true,
     ESPMoveThreshold=5, ESPCacheInterval=0.05,
+
     PredHistory=5, PredAccel=true,
-    CurrentTheme="Default", CustomThemeName="my_theme",
+
+    CurrentTheme="Default",
+    CustomThemeName="my_theme",
+
     ScanIgnoreList="dummy,target,practice",
     AutoLootNamesList="coin,gem,chest,drop",
     AimStickyMode="Strict",
 }
 
 getgenv().Settings = NS.Settings
+
 return NS
