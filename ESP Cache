@@ -1,0 +1,62 @@
+--!nocheck
+-- cfgkotik v37 — ESP Cache (throttle expensive updates by movement/time)
+local NS = getgenv().CFGKOTIK
+if not NS then NS = {}; getgenv().CFGKOTIK = NS end
+
+NS.ESPCache = (function()
+    local M = {}
+    local cache = setmetatable({}, { __mode = "k" })
+
+    function M.get(entity)
+        local e = cache[entity]
+        if not e then
+            e = {
+                lastPos = entity.root.Position,
+                lastScreen = nil,
+                lastUpdate = 0,
+            }
+            cache[entity] = e
+        end
+        return e
+    end
+
+    function M.shouldUpdate(entity, now)
+        local S = NS.Settings
+        if not S.PerfCacheESP then return true end
+
+        local e = M.get(entity)
+
+        -- throttle: not yet interval
+        if now - e.lastUpdate < (S.ESPCacheInterval or 0.05) then
+            return false
+        end
+
+        -- skip if hasn't moved enough
+        if (entity.root.Position - e.lastPos).Magnitude
+           < (S.ESPMoveThreshold or 5) then
+            return false
+        end
+
+        return true
+    end
+
+    function M.update(entity, screenPos, now)
+        local e = M.get(entity)
+        e.lastPos = entity.root.Position
+        e.lastScreen = screenPos
+        e.lastUpdate = now
+    end
+
+    function M.lastScreen(entity)
+        local e = cache[entity]
+        return e and e.lastScreen or nil
+    end
+
+    function M.clear()
+        cache = setmetatable({}, { __mode = "k" })
+    end
+
+    return M
+end)()
+
+return NS
