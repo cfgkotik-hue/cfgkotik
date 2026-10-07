@@ -3,41 +3,12 @@
 local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
-NS.ESPCache = (function()
-    local M = {}
-    local cache = setmetatable({}, {__mode = "k"})
-    function M.get(e)
-        local c = cache[e]
-        if not c then
-            c = { lastPos = e.root.Position, lastUpdate = 0 }
-            cache[e] = c
-        end
-        return c
-    end
-    function M.shouldUpdate(e, now)
-        local S = NS.Settings
-        if not S.PerfCacheESP then return true end
-        local c = M.get(e)
-        if now - c.lastUpdate < (S.ESPCacheInterval or 0.05) then return false end
-        if (e.root.Position - c.lastPos).Magnitude < (S.ESPMoveThreshold or 5) then
-            return false
-        end
-        return true
-    end
-    function M.update(e, now)
-        local c = M.get(e)
-        c.lastPos = e.root.Position
-        c.lastUpdate = now
-    end
-    return M
-end)()
-
 NS.ESP = (function()
     local M = {}
-    local pool = setmetatable({}, {__mode = "k"})
+    local pool = setmetatable({}, { __mode = "k" })
     local lastUpdate = 0
 
-    -- ================== helpers ==================
+    -- ================== color pick ==================
     local function pickColor(dist, baseCol)
         local S = NS.Settings
         if not S.ESPDistanceColors then return baseCol end
@@ -50,6 +21,7 @@ NS.ESP = (function()
         return S.ESPFarColor or baseCol
     end
 
+    -- ================== frustum cull ==================
     local function inViewFrustum(pos)
         local cam = NS.Cam.cur or NS.Workspace.CurrentCamera
         if not cam then return false end
@@ -119,6 +91,7 @@ NS.ESP = (function()
         if d.highlight then d.highlight.Enabled = false end
     end
 
+    -- ================== highlight (chams) ==================
     local function ensureHighlight(d, char)
         if d.highlight and d.highlight.Parent then return end
         if not NS.Settings.ESPHighlight then return end
@@ -131,6 +104,7 @@ NS.ESP = (function()
         d.highlight = h
     end
 
+    -- ================== corner box ==================
     local function drawCornerBox(d, x, y, w, h, col)
         local len = math.min(w, h) * 0.25
         local pts = {
@@ -292,7 +266,7 @@ NS.ESP = (function()
                                             if S.ESPTracerFrom == "Top" then
                                                 from = Vector2.new(vp.X/2, 0)
                                             elseif S.ESPTracerFrom == "Mouse" then
-                                                from = (NS.UIS or game:GetService("UserInputService")):GetMouseLocation()
+                                                from = NS.UIS:GetMouseLocation()
                                             else
                                                 from = Vector2.new(vp.X/2, vp.Y)
                                             end
@@ -344,7 +318,7 @@ NS.ESP = (function()
 
         lastUpdate = now
 
-        -- cleanup + hide disappeared
+        -- cleanup
         for char, d in pairs(pool) do
             if not seen[char] then
                 hide(d)
@@ -365,6 +339,7 @@ NS.ESP = (function()
         end
     end
 
+    -- ================== public ==================
     function M.start()
         NS.safeRender(render)
     end
