@@ -128,7 +128,8 @@ NS.Radar = (function()
 
                     if e.isPlayer then
                         local sameTeam = false
-                        if NS.LP.Team and e.player and e.player.Team == NS.LP.Team then
+                        if NS.LP.Team and e.player
+                           and e.player.Team == NS.LP.Team then
                             sameTeam = true
                         end
                         if sameTeam then
@@ -157,6 +158,7 @@ NS.Radar = (function()
         end
     end
 
+    -- ================== public ==================
     function M.start()
         NS.safeRender(render)
     end
