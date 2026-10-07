@@ -4,12 +4,7 @@ local NS = getgenv().CFGKOTIK
 if not NS then NS = {}; getgenv().CFGKOTIK = NS end
 
 local Workspace = NS.Workspace
-local UIS       = NS.UIS or game:GetService("UserInputService")
-
-local isBindActive = function(id)
-    if NS.isBindActive then return NS.isBindActive(id) end
-    return false
-end
+local UIS       = NS.UIS
 
 -- ================== SPEED ==================
 do
@@ -28,12 +23,7 @@ do
         local h = c:FindFirstChildOfClass("Humanoid")
         if not h then return end
 
-        local on = S.SpeedHack or isBindActive("Speed") 
-
-        local h = c:FindFirstChildOfClass("Humanoid")
-        if not h then return end
-
-        local on = S.SpeedHack or isBindActive("Speed")
+        local on = S.SpeedHack or NS.isBindActive("Speed")
         if on then
             if not saved then saved = h.WalkSpeed end
             if h.WalkSpeed ~= S.Speed then
@@ -112,7 +102,7 @@ do
 
     local function flyOn()
         local S = NS.Settings
-        return S.Fly or isBindActive("Fly")
+        return S.Fly or NS.isBindActive("Fly")
     end
 
     local function startFly()
@@ -217,13 +207,13 @@ function NS.Misc.teleportToMouse()
 end
 
 function NS.Misc.rejoin()
+    local TS = game:GetService("TeleportService")
     local ok = pcall(function()
-        game:GetService("TeleportService"):Teleport(game.PlaceId, NS.LP)
+        TS:Teleport(game.PlaceId, NS.LP)
     end)
     if not ok then
         pcall(function()
-            game:GetService("TeleportService"):TeleportToPlaceInstance(
-                game.PlaceId, game.JobId, NS.LP)
+            TS:TeleportToPlaceInstance(game.PlaceId, game.JobId, NS.LP)
         end)
     end
 end
